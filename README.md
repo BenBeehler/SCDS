@@ -18,7 +18,7 @@ Go into your main manifest method and add
   
 <h2>For handling Disconnects:</h2>
 Create a new class
-make sure it extends <strong>ClientDisconnectEvent</strong>]
+make sure it extends <strong>ClientDisconnectEvent</strong>
 make sure it implements <strong>Listener</strong>
 import all required methods
 Go into your main manifest method and add 
@@ -33,5 +33,5 @@ Go into your main manifest method and add
 <strong>ListenerManager.addListener(new MyClassICreatedEarlier());
 
 
-<h1>Stand Alone<h1>
+<h1>Stand Alone</h1>
 - todo
