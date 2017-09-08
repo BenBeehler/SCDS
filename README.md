@@ -10,11 +10,11 @@ This project is written in java, include the libraries into your application...
 
 <h2>For handling Connections:</h2>
 Create a new class
-make sure it extends <strong>ClientConnectEvent</strong>]
+make sure it extends <strong>ClientConnectEvent</strong>
 make sure it implements <strong>Listener</strong>
 import all required methods
 Go into your main manifest method and add 
-<strong>ListenerManager.addListener(new MyClassICreatedEarlier());
+<strong>ListenerManager.addListener(new MyClassICreatedEarlier());</strong>
   
 <h2>For handling Disconnects:</h2>
 Create a new class
@@ -22,7 +22,7 @@ make sure it extends <strong>ClientDisconnectEvent</strong>
 make sure it implements <strong>Listener</strong>
 import all required methods
 Go into your main manifest method and add 
-<strong>ListenerManager.addListener(new MyClassICreatedEarlier());
+<strong>ListenerManager.addListener(new MyClassICreatedEarlier());</strong>
   
 <h2>For handling Queries:</h2>
 Create a new class
@@ -30,7 +30,7 @@ make sure it extends <strong>DataClientSendEvent</strong>
 make sure it implements <strong>Listener</strong>
 import all required methods
 Go into your main manifest method and add 
-<strong>ListenerManager.addListener(new MyClassICreatedEarlier());
+<strong>ListenerManager.addListener(new MyClassICreatedEarlier());<strong>
 
 
 <h1>Stand Alone</h1>
