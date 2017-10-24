@@ -1,8 +1,11 @@
 package com.benbeehler.scds.core;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.ben.configapi.ConfigAPI;
 import com.benbeehler.scds.core.instance.DBServer;
@@ -14,6 +17,7 @@ import com.benbeehler.scds.listener.instance.ClientConnectEvent;
 import com.benbeehler.scds.listener.instance.ClientDataSendEvent;
 import com.benbeehler.scds.listener.instance.ClientDisconnectEvent;
 import com.benbeehler.scds.listener.instance.Event;
+import com.benbeehler.scds.utils.Log;
 
 public class SCDSCore {
 
@@ -21,6 +25,9 @@ public class SCDSCore {
 	public static DBServer SERVER = new DBServer(PORT);
 	public static boolean RUNNING = false;
 	public static String PASSWORD = "password";
+	public static Executor THREADPOOL = Executors.newCachedThreadPool();
+	public static ArrayList<ServerSocket> SUBSERVERS = new ArrayList<>();
+	public static boolean isMasterServer = false;
 		
 	public static void init() {
 		initSetup();
@@ -34,17 +41,17 @@ public class SCDSCore {
 			if(ConfigAPI.config.pathExists("system.password")) {
 				PASSWORD = ConfigAPI.config.getValueFromPath("system.password");
 			} else {
-				System.out.println("Warning -> The path (system.password) does not exist! You can set it with update system.password (password)");
+				Log.warning("The path (system.password) does not exist! You can set it with update system.password (password str)");
 			}
 			
 			if(ConfigAPI.config.pathExists("system.port")) {
 				PORT = ConfigAPI.config.getInteger("system.port");
 				SERVER = new DBServer(PORT);
 			} else {
-				System.out.println("Warning -> The path (system.port) does not exist! You can set it with update system.port (portnumber)");
+				Log.warning("The path (system.port) does not exist! You can set it with update system.port (portnumber)");
 			}
 		} else {
-			System.out.println("Warning -> The file does not exist and could not be auto-generated, you need to create it in /files/config.yml");
+			Log.warning("The file does not exist and could not be auto-generated, you need to create it in /files/config.yml");
 		}
 	}
 	
@@ -55,8 +62,8 @@ public class SCDSCore {
 	}
 	
 	public static void start() {
-		System.out.println("Info -> Starting server on " + PORT);
-		System.out.println("Info -> The password for this server is " + PASSWORD.trim());
+		Log.info("Executing server on " + PORT);
+		Log.info("Server password is " + PASSWORD);
 		
 		RUNNING = true;
 		
@@ -76,13 +83,19 @@ public class SCDSCore {
 	public static void handleConnections() {
 		Socket socket;
 		try {
-			socket = SERVER.getServer().accept();
-			
-			ListenerManager.LISTENERS.stream().forEach(listener -> {
-				if(listener instanceof ClientConnectEvent) {
-					listener.callEvent(new Event(socket));
+			if(SERVER.getServer() != null) {
+				if(!SERVER.getServer().isClosed()) {
+					socket = SERVER.getServer().accept();
+					
+					ListenerManager.LISTENERS.stream().forEach(listener -> {
+						if(listener instanceof ClientConnectEvent) {
+							THREADPOOL.execute(() -> {
+								listener.callEvent(new Event(socket));
+							});
+						}
+					});
 				}
-			});
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -105,7 +118,9 @@ public class SCDSCore {
 								
 							ListenerManager.LISTENERS.stream().forEach(listener -> {
 								if(listener instanceof ClientDataSendEvent) {
-									listener.callEvent(event);
+									THREADPOOL.execute(() -> {
+										listener.callEvent(event);
+									});
 								}
 							});
 						}
@@ -121,11 +136,21 @@ public class SCDSCore {
 			
 			ListenerManager.LISTENERS.stream().forEach(listener -> {
 				if(listener instanceof ClientDisconnectEvent) {
-					listener.callEvent(new Event(client));
+					THREADPOOL.execute(() -> {
+						listener.callEvent(new Event(client));
+					});
 				}
 			});
 		});
 		
 		remove.clear();
+	}
+
+	public static void setIsMaster(boolean master) {
+		SCDSCore.isMasterServer = master;
+	}
+
+	public static boolean isMaster() {
+		return SCDSCore.isMasterServer;
 	}
 }
