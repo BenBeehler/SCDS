@@ -27,7 +27,7 @@ public class SCDSCore {
 	public static DBServer SERVER = new DBServer(PORT);
 	public static boolean RUNNING = false;
 	public static String PASSWORD = "password";
-	public static ConfigManager MAIN_CONFIG = ConfigAPI.createConfig(new File("/files/config.yml"));
+	public static ConfigManager MAIN_CONFIG = ConfigAPI.createConfig(new File("./files/config.yml"));
 	public static Executor THREADPOOL = Executors.newCachedThreadPool();
 	public static ArrayList<ServerSocket> SUBSERVERS = new ArrayList<>();
 	public static boolean isMasterServer = false;
